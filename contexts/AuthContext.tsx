@@ -1,0 +1,197 @@
+'use client'
+
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
+import { insforge } from '@/lib/insforge'
+import type { UserSchema } from '@insforge/sdk'
+
+interface Profile {
+  id: string
+  discord_id: string
+  username: string
+  avatar_url: string | null
+  created_at: string
+  updated_at: string
+}
+
+interface AuthContextType {
+  user: UserSchema | null
+  profile: Profile | null
+  loading: boolean
+  signInWithDiscord: () => Promise<void>
+  signOut: () => Promise<void>
+  refreshProfile: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<UserSchema | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const hasInitialized = useRef(false)
+
+  const upsertProfile = async (userData: UserSchema): Promise<Profile> => {
+    const discordProfile = userData.profile as any
+    
+    let discordId = userData.id
+    
+    if (discordProfile?.avatar_url) {
+      const avatarUrlMatch = discordProfile.avatar_url.match(/cdn\.discordapp\.com\/avatars\/(\d+)/)
+      if (avatarUrlMatch && avatarUrlMatch[1]) {
+        discordId = avatarUrlMatch[1]
+      }
+    }
+    
+    if (discordProfile?.discord_id) {
+      discordId = discordProfile.discord_id
+    } else if (discordProfile?.sub) {
+      discordId = discordProfile.sub
+    }
+    
+    const username = discordProfile?.name || userData.email?.split('@')[0] || 'Unknown'
+    const avatarUrl = discordProfile?.avatar_url || null
+
+    const { data, error } = await insforge.database
+      .from('profiles')
+      .upsert({
+        id: userData.id,
+        discord_id: discordId,
+        username: username,
+        avatar_url: avatarUrl,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Profile upsert error:', error)
+      throw error
+    }
+
+    return data as Profile
+  }
+
+  const refreshProfile = async () => {
+    if (!user) {
+      setProfile(null)
+      return
+    }
+
+    try {
+      const { data, error } = await insforge.database
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Profile fetch error:', error)
+        throw error
+      }
+
+      if (data) {
+        setProfile(data as Profile)
+      } else {
+        const newProfile = await upsertProfile(user)
+        setProfile(newProfile)
+      }
+    } catch (err) {
+      console.error('Failed to refresh profile:', err)
+    }
+  }
+
+  useEffect(() => {
+    if (hasInitialized.current) return
+    hasInitialized.current = true
+
+    const initAuth = async () => {
+      try {
+        // Check if we have OAuth parameters and clean URL
+        const urlParams = new URLSearchParams(window.location.search)
+        if (urlParams.has('insforge_code')) {
+          // Clean URL immediately to prevent re-processing
+          window.history.replaceState({}, document.title, window.location.pathname)
+        }
+
+        // Let SDK handle OAuth callback automatically
+        const { data } = await insforge.auth.getCurrentUser()
+        const currentUser = data?.user ?? null
+
+        if (currentUser) {
+          setUser(currentUser)
+
+          // Get or create profile
+          const { data: profileData, error } = await insforge.database
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single()
+
+          if (profileData) {
+            setProfile(profileData as Profile)
+          } else {
+            const newProfile = await upsertProfile(currentUser)
+            setProfile(newProfile)
+          }
+        }
+      } catch (err) {
+        console.error('Auth init error:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initAuth()
+  }, [])
+
+  const signInWithDiscord = async () => {
+    try {
+      await insforge.auth.signInWithOAuth({
+        provider: 'discord',
+        redirectTo: window.location.origin
+      })
+    } catch (err) {
+      console.error('OAuth sign-in error:', err)
+    }
+  }
+
+  const signOut = async () => {
+    try {
+      await insforge.auth.signOut()
+      setUser(null)
+      setProfile(null)
+    } catch (err) {
+      console.error('Sign out error:', err)
+    }
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        signInWithDiscord,
+        signOut,
+        refreshProfile
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider')
+  }
+  return context
+}
