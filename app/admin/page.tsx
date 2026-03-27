@@ -53,8 +53,22 @@ const AdminPage: React.FC = () => {
     }
 
     try {
-      setIsAdmin(true);
-      await fetchAdminUsers();
+      const { data: adminRecord, error } = await insforge.database
+        .from('admin_users')
+        .select('discord_id, role')
+        .eq('discord_id', profile.discord_id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      const hasAdminAccess = !!adminRecord && adminRecord.role === 'admin';
+      setIsAdmin(hasAdminAccess);
+
+      if (hasAdminAccess) {
+        await fetchAdminUsers();
+      }
     } catch (error) {
       console.error('Error checking admin access:', error);
       setIsAdmin(false);

@@ -15,6 +15,7 @@ interface Profile {
   discord_id: string
   username: string
   avatar_url: string | null
+  role?: string
   created_at: string
   updated_at: string
 }
@@ -65,14 +66,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         discord_id: discordId,
         username: username,
         avatar_url: avatarUrl,
+        role: 'user',
         updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'id',
+        ignoreDuplicates: true
       })
       .select()
       .single()
 
     if (error) {
-      console.error('Profile upsert error:', error)
-      throw error
+      if (error.code !== 'PGRST116') {
+        console.error('Profile upsert error:', error)
+        throw error
+      }
+
+      // Row already existed (ignored duplicate): fetch current row
+      const { data: existingProfile, error: fetchError } = await insforge.database
+        .from('profiles')
+        .select('*')
+        .eq('id', userData.id)
+        .single()
+
+      if (fetchError) {
+        console.error('Profile fetch after upsert ignore error:', fetchError)
+        throw fetchError
+      }
+
+      return existingProfile as Profile
     }
 
     return data as Profile

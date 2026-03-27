@@ -12,6 +12,7 @@ import {
   Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { insforge } from '@/lib/insforge';
 
 interface NavItem {
   label: string;
@@ -132,6 +133,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ className = '', onToggle }) => {
   const { user, profile } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -207,6 +209,31 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '', onToggle }) => {
   useEffect(() => {
     setCurrentPath(window.location.pathname);
   }, []);
+
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      if (!user || !profile) {
+        setIsAdmin(false);
+        return;
+      }
+
+      const { data, error } = await insforge.database
+        .from('admin_users')
+        .select('discord_id, role')
+        .eq('discord_id', profile.discord_id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Sidebar admin check error:', error);
+        setIsAdmin(false);
+        return;
+      }
+
+      setIsAdmin(!!data && data.role === 'admin');
+    };
+
+    checkAdminAccess();
+  }, [user, profile]);
 
   const NavItemComponent: React.FC<{ item: NavItem; isExpanded: boolean }> = ({ item, isExpanded }) => {
     const isActive = currentPath === item.href;
@@ -327,8 +354,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '', onToggle }) => {
               ))}
             </div>
 
-            {/* Admin Section - Only show for authenticated users */}
-            {user && profile && (
+            {/* Admin Section - Only show for admins */}
+            {user && profile && isAdmin && (
               <>
                 {/* Divider */}
                 <div className="my-4 border-t border-gray-800/50"></div>
