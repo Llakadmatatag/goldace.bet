@@ -31,6 +31,7 @@ interface TimeRemaining {
 
 export default function CSGOROLLLeaderboard() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardPlayer[]>([]);
+  const [previousWinners, setPreviousWinners] = useState<LeaderboardPlayer[]>([]);
   const [metaData, setMetaData] = useState<MetaData | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
@@ -62,9 +63,20 @@ export default function CSGOROLLLeaderboard() {
           .from('csgoroll_active_lb')
           .select('referee_display_name, wagered_total')
           .order('wagered_total', { ascending: false });
+
+        const { data: previousWinnersResponse, error: previousWinnersError } = await insforge.database
+          .from('csgoroll_lb_march')
+          .select('username, wager, prize')
+          .order('prize', { ascending: false })
+          .limit(3);
         
         if (leaderboardError) {
           console.error('Error fetching leaderboard:', leaderboardError);
+          return;
+        }
+
+        if (previousWinnersError) {
+          console.error('Error fetching previous winners:', previousWinnersError);
           return;
         }
         
@@ -75,9 +87,17 @@ export default function CSGOROLLLeaderboard() {
           wager: player.wagered_total,
           prize: prizeDistribution[index] || 0
         }));
+
+        const processedPreviousWinners = (previousWinnersResponse || []).map((player: any, index: number) => ({
+          rank: index + 1,
+          username: player.username,
+          wager: player.wager,
+          prize: player.prize
+        }));
         
         setMetaData(metaDataResponse);
         setLeaderboardData(processedLeaderboard);
+        setPreviousWinners(processedPreviousWinners);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -499,7 +519,6 @@ export default function CSGOROLLLeaderboard() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Previous winners will be shown here when historical data is available */}
             <div className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -509,7 +528,7 @@ export default function CSGOROLLLeaderboard() {
                   <span className="text-orange-400 font-semibold">Previous Champion</span>
                 </div>
                 <div className="text-yellow-400 font-bold">
-                  TBA
+                  {previousWinners[0]?.prize || 'TBA'}
                 </div>
               </div>
               <div className="flex items-center gap-3 mb-4">
@@ -517,14 +536,14 @@ export default function CSGOROLLLeaderboard() {
                   <img src="/images/partners/csgoroll_coin.webp" alt="CSGORoll" className="w-8 h-8 object-cover" />
                 </div>
                 <div>
-                  <div className="text-white font-semibold">Waiting for Winner</div>
+                  <div className="text-white font-semibold">{maskUsername(previousWinners[0]?.username)}</div>
                   <div className="text-gray-400 text-sm">Previous month champion</div>
                 </div>
               </div>
               <div className="pt-4 border-t border-orange-800/30">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">Total Wager</span>
-                  <span className="text-orange-300 font-semibold">TBA</span>
+                  <span className="text-orange-300 font-semibold">{previousWinners[0]?.wager?.toLocaleString() || 'TBA'}</span>
                 </div>
               </div>
             </div>
@@ -538,7 +557,7 @@ export default function CSGOROLLLeaderboard() {
                   <span className="text-orange-400 font-semibold">Previous Runner-up</span>
                 </div>
                 <div className="text-yellow-400 font-bold">
-                  TBA
+                  {previousWinners[1]?.prize || 'TBA'}
                 </div>
               </div>
               <div className="flex items-center gap-3 mb-4">
@@ -546,14 +565,14 @@ export default function CSGOROLLLeaderboard() {
                   <img src="/images/partners/csgoroll_coin.webp" alt="CSGORoll" className="w-8 h-8 object-cover" />
                 </div>
                 <div>
-                  <div className="text-white font-semibold">Waiting for Winner</div>
+                  <div className="text-white font-semibold">{maskUsername(previousWinners[1]?.username)}</div>
                   <div className="text-gray-400 text-sm">Previous month runner-up</div>
                 </div>
               </div>
               <div className="pt-4 border-t border-orange-800/30">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">Total Wager</span>
-                  <span className="text-orange-300 font-semibold">TBA</span>
+                  <span className="text-orange-300 font-semibold">{previousWinners[1]?.wager?.toLocaleString() || 'TBA'}</span>
                 </div>
               </div>
             </div>
@@ -567,7 +586,7 @@ export default function CSGOROLLLeaderboard() {
                   <span className="text-orange-400 font-semibold">Previous Third Place</span>
                 </div>
                 <div className="text-yellow-400 font-bold">
-                  TBA
+                  {previousWinners[2]?.prize || 'TBA'}
                 </div>
               </div>
               <div className="flex items-center gap-3 mb-4">
@@ -575,14 +594,14 @@ export default function CSGOROLLLeaderboard() {
                   <img src="/images/partners/csgoroll_coin.webp" alt="CSGORoll" className="w-8 h-8 object-cover" />
                 </div>
                 <div>
-                  <div className="text-white font-semibold">Waiting for Winner</div>
+                  <div className="text-white font-semibold">{maskUsername(previousWinners[2]?.username)}</div>
                   <div className="text-gray-400 text-sm">Previous month third place</div>
                 </div>
               </div>
               <div className="pt-4 border-t border-orange-800/30">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">Total Wager</span>
-                  <span className="text-orange-300 font-semibold">TBA</span>
+                  <span className="text-orange-300 font-semibold">{previousWinners[2]?.wager?.toLocaleString() || 'TBA'}</span>
                 </div>
               </div>
             </div>
