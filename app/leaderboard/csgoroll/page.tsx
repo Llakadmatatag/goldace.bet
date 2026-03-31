@@ -68,7 +68,7 @@ export default function CSGOROLLLeaderboard() {
           .from('csgoroll_lb_march')
           .select('Username, Wager, Prize')
           .order('Prize', { ascending: false })
-          .limit(3);
+          .limit(4);
         
         if (leaderboardError) {
           console.error('Error fetching leaderboard:', leaderboardError);
@@ -526,14 +526,15 @@ export default function CSGOROLLLeaderboard() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {/* Rank 1 - Top Left */}
+            <div className="bg-gradient-to-br from-yellow-900/20 to-amber-800/10 backdrop-blur-md border border-yellow-800/30 rounded-xl p-6 hover:bg-yellow-900/30 transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-black font-bold">
                     1
                   </div>
-                  <span className="text-orange-400 font-semibold">Previous Champion</span>
+                  <span className="text-yellow-400 font-semibold">Previous Champion</span>
                 </div>
                 <div className="text-yellow-400 font-bold">
                   {previousWinners[0]?.prize || 'TBA'}
@@ -548,23 +549,24 @@ export default function CSGOROLLLeaderboard() {
                   <div className="text-gray-400 text-sm">Previous month champion</div>
                 </div>
               </div>
-              <div className="pt-4 border-t border-orange-800/30">
+              <div className="pt-4 border-t border-yellow-800/30">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">Total Wager</span>
-                  <span className="text-orange-300 font-semibold">{previousWinners[0]?.wager?.toLocaleString() || 'TBA'}</span>
+                  <span className="text-yellow-300 font-semibold">{previousWinners[0]?.wager?.toLocaleString() || 'TBA'}</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300">
+            {/* Rank 2 - Top Right */}
+            <div className="bg-gradient-to-br from-gray-900/20 to-slate-800/10 backdrop-blur-md border border-gray-800/30 rounded-xl p-6 hover:bg-gray-900/30 transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white font-bold">
                     2
                   </div>
-                  <span className="text-orange-400 font-semibold">Previous Runner-up</span>
+                  <span className="text-gray-400 font-semibold">Previous Runner-up</span>
                 </div>
-                <div className="text-yellow-400 font-bold">
+                <div className="text-gray-300 font-bold">
                   {previousWinners[1]?.prize || 'TBA'}
                 </div>
               </div>
@@ -577,14 +579,15 @@ export default function CSGOROLLLeaderboard() {
                   <div className="text-gray-400 text-sm">Previous month runner-up</div>
                 </div>
               </div>
-              <div className="pt-4 border-t border-orange-800/30">
+              <div className="pt-4 border-t border-gray-800/30">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">Total Wager</span>
-                  <span className="text-orange-300 font-semibold">{previousWinners[1]?.wager?.toLocaleString() || 'TBA'}</span>
+                  <span className="text-gray-300 font-semibold">{previousWinners[1]?.wager?.toLocaleString() || 'TBA'}</span>
                 </div>
               </div>
             </div>
 
+            {/* Rank 3 - Bottom Left */}
             <div className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -593,7 +596,7 @@ export default function CSGOROLLLeaderboard() {
                   </div>
                   <span className="text-orange-400 font-semibold">Previous Third Place</span>
                 </div>
-                <div className="text-yellow-400 font-bold">
+                <div className="text-orange-400 font-bold">
                   {previousWinners[2]?.prize || 'TBA'}
                 </div>
               </div>
@@ -610,6 +613,36 @@ export default function CSGOROLLLeaderboard() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-400">Total Wager</span>
                   <span className="text-orange-300 font-semibold">{previousWinners[2]?.wager?.toLocaleString() || 'TBA'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Rank 4 - Bottom Right */}
+            <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/10 backdrop-blur-md border border-blue-800/30 rounded-xl p-6 hover:bg-blue-900/30 transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold">
+                    4
+                  </div>
+                  <span className="text-blue-400 font-semibold">Previous Fourth Place</span>
+                </div>
+                <div className="text-blue-400 font-bold">
+                  {previousWinners[3]?.prize || 'TBA'}
+                </div>
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gray-700/50 rounded-full flex items-center justify-center border-2 border-gray-600/50">
+                  <img src="/images/partners/csgoroll_coin.webp" alt="CSGORoll" className="w-8 h-8 object-cover" />
+                </div>
+                <div>
+                  <div className="text-white font-semibold">{maskUsername(previousWinners[3]?.username)}</div>
+                  <div className="text-gray-400 text-sm">Previous month fourth place</div>
+                </div>
+              </div>
+              <div className="pt-4 border-t border-blue-800/30">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-400">Total Wager</span>
+                  <span className="text-blue-300 font-semibold">{previousWinners[3]?.wager?.toLocaleString() || 'TBA'}</span>
                 </div>
               </div>
             </div>
