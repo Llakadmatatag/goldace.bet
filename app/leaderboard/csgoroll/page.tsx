@@ -19,7 +19,7 @@ interface LeaderboardPlayer {
 interface MetaData {
   prize_pool: string;
   end_date: string;
-  prize_distribution: number[];
+  prize_distribution: string[];
 }
 
 interface TimeRemaining {
@@ -66,8 +66,8 @@ export default function CSGOROLLLeaderboard() {
 
         const { data: previousWinnersResponse, error: previousWinnersError } = await insforge.database
           .from('csgoroll_lb_march')
-          .select('username, wager, prize')
-          .order('prize', { ascending: false })
+          .select('Username, Wager, Prize')
+          .order('Prize', { ascending: false })
           .limit(3);
         
         if (leaderboardError) {
@@ -80,19 +80,27 @@ export default function CSGOROLLLeaderboard() {
           return;
         }
         
-        const prizeDistribution = metaDataResponse.prize_distribution as number[];
-        const processedLeaderboard = leaderboardResponse.map((player: any, index: number) => ({
-          rank: index + 1,
-          username: player.referee_display_name,
-          wager: player.wagered_total,
-          prize: prizeDistribution[index] || 0
-        }));
+        const prizeDistribution = metaDataResponse.prize_distribution;
+        const processedLeaderboard = leaderboardResponse.map((player: any, index: number) => {
+          const prizeText = prizeDistribution[index] || "0";
+          // Extract the higher value from ranges like "600-1200" or use the single value
+          const prizeValue = prizeText.includes('-') 
+            ? parseInt(prizeText.split('-')[1]) || 0 
+            : parseInt(prizeText) || 0;
+          
+          return {
+            rank: index + 1,
+            username: player.referee_display_name,
+            wager: parseFloat(player.wagered_total),
+            prize: prizeValue
+          };
+        });
 
         const processedPreviousWinners = (previousWinnersResponse || []).map((player: any, index: number) => ({
           rank: index + 1,
-          username: player.username,
-          wager: player.wager,
-          prize: player.prize
+          username: player.Username,
+          wager: parseFloat(player.Wager),
+          prize: parseInt(player.Prize)
         }));
         
         setMetaData(metaDataResponse);
