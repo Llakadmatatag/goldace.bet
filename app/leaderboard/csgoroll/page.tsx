@@ -67,7 +67,7 @@ export default function CSGOROLLLeaderboard() {
         const { data: previousWinnersResponse, error: previousWinnersError } = await insforge.database
           .from('csgoroll_lb_march')
           .select('Username, Wager, Prize')
-          .order('Prize', { ascending: false })
+          .order('Wager', { ascending: false })
           .limit(4);
         
         if (leaderboardError) {
