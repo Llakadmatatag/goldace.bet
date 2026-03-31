@@ -13,7 +13,7 @@ interface LeaderboardPlayer {
   rank: number;
   username: string;
   wager: number;
-  prize: number;
+  prize: string | number; // Can be string (range) for current leaderboard or number for previous winners
 }
 
 interface MetaData {
@@ -83,16 +83,12 @@ export default function CSGOROLLLeaderboard() {
         const prizeDistribution = metaDataResponse.prize_distribution;
         const processedLeaderboard = leaderboardResponse.map((player: any, index: number) => {
           const prizeText = prizeDistribution[index] || "0";
-          // Extract the higher value from ranges like "600-1200" or use the single value
-          const prizeValue = prizeText.includes('-') 
-            ? parseInt(prizeText.split('-')[1]) || 0 
-            : parseInt(prizeText) || 0;
           
           return {
             rank: index + 1,
             username: player.referee_display_name,
             wager: parseFloat(player.wagered_total),
-            prize: prizeValue
+            prize: prizeText // Display the full range string
           };
         });
 
