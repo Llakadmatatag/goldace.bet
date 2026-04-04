@@ -57,6 +57,17 @@ const leaderboardItems: NavItem[] = [
       />
     )
   },
+  { 
+    label: 'CSGOWIN', 
+    href: '/leaderboard/csgowin', 
+    icon: ({ className }: { className?: string }) => (
+      <img 
+        src="/images/partners/csgowin-icon.webp" 
+        alt="CSGOWIN" 
+        className={`w-5 h-5 ${className || ''}`}
+      />
+    )
+  },
 ];
 
 const DiscordIcon = ({ className }: { className?: string }) => (

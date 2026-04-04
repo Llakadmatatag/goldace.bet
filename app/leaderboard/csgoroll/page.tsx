@@ -88,7 +88,7 @@ export default function CSGOROLLLeaderboard() {
             rank: index + 1,
             username: player.referee_display_name,
             wager: parseFloat(player.wagered_total),
-            prize: prizeText // Display the full range string
+            prize: prizeText
           };
         });
 
