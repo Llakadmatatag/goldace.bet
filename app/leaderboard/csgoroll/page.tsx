@@ -13,7 +13,7 @@ interface LeaderboardPlayer {
   rank: number;
   username: string;
   wager: number;
-  prize: string | number; // Can be string (range) for current leaderboard or number for previous winners
+  prize: string | number;
 }
 
 interface MetaData {
