@@ -85,7 +85,7 @@ export default function CSGOWINLeaderboard() {
           };
         });
 
-        const processedPreviousWinners: LeaderboardPlayer[] = []; // Leave empty for now
+        const processedPreviousWinners: LeaderboardPlayer[] = [];
         
         setMetaData(metaDataToSet);
         setLeaderboardData(processedLeaderboard);
@@ -386,7 +386,6 @@ export default function CSGOWINLeaderboard() {
                       </td>
                     </tr>
                   ) : (
-                    // Show ranks 4-5 in table (ranks 1-3 are on podium)
                     [4, 5].map((rank) => {
                       const player = leaderboardData.find((p: LeaderboardPlayer) => p.rank === rank);
                       const prize = metaData?.prizes?.[rank - 1] || '0';
