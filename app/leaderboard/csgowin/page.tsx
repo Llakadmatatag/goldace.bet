@@ -69,13 +69,15 @@ export default function CSGOWINLeaderboard() {
         const defaultPrizes = [250, 125, 75, 25, 25];
         const metaDataToSet = metaDataResponse ? {
           ...metaDataResponse,
-          prizes: JSON.parse(metaDataResponse.prizes)
+          prizes: metaDataResponse.prizes
         } : {
           prizes: defaultPrizes,
           date_end: null
         };
         
         setMetaData(metaDataToSet);
+        console.log('Final metaData object being set:', metaDataToSet);
+        console.log('Final date_end being set:', metaDataToSet?.date_end);
         const processedLeaderboard = leaderboardResponse.map((player: any, index: number) => {
           const prizeText = metaDataToSet.prizes[index] || "0";
           
