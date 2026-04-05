@@ -1,43 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
-interface TimeRemaining {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
-
 export default function CSGOWINLeaderboard() {
-  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0
-  });
-
-  // Set a future launch date (30 days from now as example)
-  const launchDate = new Date();
-  launchDate.setDate(launchDate.getDate() + 30);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = launchDate.getTime() - now;
-
-      if (distance > 0) {
-        setTimeRemaining({
-          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((distance % (1000 * 60)) / 1000)
-        });
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center px-4">
@@ -53,8 +16,8 @@ export default function CSGOWINLeaderboard() {
             <div className="relative z-10 flex flex-col items-center text-center">
               {/* Icon */}
               <div className="mb-8 opacity-0 animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-full border border-blue-500/50 shadow-lg shadow-blue-500/20">
-                  <span className="text-4xl">🎮</span>
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-full border border-blue-500/50 shadow-lg shadow-blue-500/20 overflow-hidden">
+                  <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-16 h-16" />
                 </div>
               </div>
 
@@ -75,43 +38,7 @@ export default function CSGOWINLeaderboard() {
                 </p>
               </div>
 
-              {/* Countdown Section */}
-              <div className="mb-12 opacity-0 animate-fade-in" style={{ animationDelay: '500ms', animationFillMode: 'both' }}>
-                <h2 className="text-xl lg:text-2xl font-audiowide text-blue-300 mb-6">Launch Countdown</h2>
-                <div className="flex gap-4 sm:gap-6 justify-center flex-wrap">
-                  <div className="text-center">
-                    <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/40 border border-blue-700/50 rounded-xl px-4 py-3 min-w-[80px] sm:min-w-[100px] shadow-lg shadow-blue-500/10">
-                      <div className="text-3xl sm:text-4xl font-bold text-blue-200">{String(timeRemaining.days).padStart(2, '0')}</div>
-                    </div>
-                    <div className="text-sm text-blue-300 mt-2 font-semibold">Days</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/40 border border-blue-700/50 rounded-xl px-4 py-3 min-w-[80px] sm:min-w-[100px] shadow-lg shadow-blue-500/10">
-                      <div className="text-3xl sm:text-4xl font-bold text-blue-200">{String(timeRemaining.hours).padStart(2, '0')}</div>
-                    </div>
-                    <div className="text-sm text-blue-300 mt-2 font-semibold">Hours</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/40 border border-blue-700/50 rounded-xl px-4 py-3 min-w-[80px] sm:min-w-[100px] shadow-lg shadow-blue-500/10">
-                      <div className="text-3xl sm:text-4xl font-bold text-blue-200">{String(timeRemaining.minutes).padStart(2, '0')}</div>
-                    </div>
-                    <div className="text-sm text-blue-300 mt-2 font-semibold">Minutes</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-gradient-to-br from-blue-900/60 to-blue-800/40 border border-blue-700/50 rounded-xl px-4 py-3 min-w-[80px] sm:min-w-[100px] shadow-lg shadow-blue-500/10">
-                      <div className="text-3xl sm:text-4xl font-bold text-blue-200">{String(timeRemaining.seconds).padStart(2, '0')}</div>
-                    </div>
-                    <div className="text-sm text-blue-300 mt-2 font-semibold">Seconds</div>
-                  </div>
-                </div>
-              </div>
 
-              {/* Call to Action */}
-              <div className="opacity-0 animate-fade-in" style={{ animationDelay: '600ms', animationFillMode: 'both' }}>
-                <button className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/30">
-                  Notify Me When Live
-                </button>
-              </div>
             </div>
 
             {/* Top Border Gradient */}
