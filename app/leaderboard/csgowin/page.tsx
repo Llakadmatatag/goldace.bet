@@ -372,8 +372,8 @@ export default function CSGOWINLeaderboard() {
                       </td>
                     </tr>
                   ) : (
-                    // Always show ranks 1-5 with prize amounts
-                    [1, 2, 3, 4, 5].map((rank) => {
+                    // Show ranks 4-5 in table (ranks 1-3 are on podium)
+                    [4, 5].map((rank) => {
                       const player = leaderboardData.find((p: LeaderboardPlayer) => p.rank === rank);
                       const prize = metaData?.prizes?.[rank - 1] || '0';
                       
