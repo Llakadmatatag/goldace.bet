@@ -61,9 +61,18 @@ export default function CSGOWINLeaderboard() {
           return;
         }
         
-        const prizeDistribution = JSON.parse(metaDataResponse.prizes);
+        const defaultPrizes = [250, 125, 75, 25, 25];
+        const metaDataToSet = metaDataResponse ? {
+          ...metaDataResponse,
+          prizes: JSON.parse(metaDataResponse.prizes)
+        } : {
+          prizes: defaultPrizes,
+          date_end: null
+        };
+        
+        setMetaData(metaDataToSet);
         const processedLeaderboard = leaderboardResponse.map((player: any, index: number) => {
-          const prizeText = prizeDistribution[index] || "0";
+          const prizeText = metaDataToSet.prizes[index] || "0";
           
           return {
             rank: index + 1,
@@ -75,13 +84,7 @@ export default function CSGOWINLeaderboard() {
 
         const processedPreviousWinners: LeaderboardPlayer[] = []; // Leave empty for now
         
-        setMetaData({
-
-          ...metaDataResponse,
-
-          prizes: JSON.parse(metaDataResponse.prizes)
-
-        });
+        setMetaData(metaDataToSet);
         setLeaderboardData(processedLeaderboard);
         setPreviousWinners(processedPreviousWinners);
       } catch (error) {
@@ -160,32 +163,38 @@ export default function CSGOWINLeaderboard() {
               {/* RIGHT SIDE */}
               <div className="flex flex-col items-center lg:items-end text-center lg:text-right">
                 <h2 className="text-2xl font-audiowide text-white mb-4">Time Remaining</h2>
-                <div className="flex gap-2 sm:gap-4">
-                  <div className="text-center">
-                    <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
-                      <div className="text-2xl font-bold text-white">{String(timeRemaining.days).padStart(2, '0')}</div>
+                {metaData?.date_end ? (
+                  <div className="flex gap-2 sm:gap-4">
+                    <div className="text-center">
+                      <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
+                        <div className="text-2xl font-bold text-white">{String(timeRemaining.days).padStart(2, '0')}</div>
+                      </div>
+                      <div className="text-xs text-blue-200 mt-1">Days</div>
                     </div>
-                    <div className="text-xs text-blue-200 mt-1">Days</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
-                      <div className="text-2xl font-bold text-white">{String(timeRemaining.hours).padStart(2, '0')}</div>
+                    <div className="text-center">
+                      <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
+                        <div className="text-2xl font-bold text-white">{String(timeRemaining.hours).padStart(2, '0')}</div>
+                      </div>
+                      <div className="text-xs text-blue-200 mt-1">Hours</div>
                     </div>
-                    <div className="text-xs text-blue-200 mt-1">Hours</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
-                      <div className="text-2xl font-bold text-white">{String(timeRemaining.minutes).padStart(2, '0')}</div>
+                    <div className="text-center">
+                      <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
+                        <div className="text-2xl font-bold text-white">{String(timeRemaining.minutes).padStart(2, '0')}</div>
+                      </div>
+                      <div className="text-xs text-blue-200 mt-1">Minutes</div>
                     </div>
-                    <div className="text-xs text-blue-200 mt-1">Minutes</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
-                      <div className="text-2xl font-bold text-white">{String(timeRemaining.seconds).padStart(2, '0')}</div>
+                    <div className="text-center">
+                      <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
+                        <div className="text-2xl font-bold text-white">{String(timeRemaining.seconds).padStart(2, '0')}</div>
+                      </div>
+                      <div className="text-xs text-blue-200 mt-1">Seconds</div>
                     </div>
-                    <div className="text-xs text-blue-200 mt-1">Seconds</div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-xl text-blue-200">
+                    Competition starting soon
+                  </div>
+                )}
               </div>
             </div>
           </div>
