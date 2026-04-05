@@ -37,6 +37,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const hasInitialized = useRef(false)
+  const tokenRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  
+  const persistSession = (userData: UserSchema | null, profileData: Profile | null) => {
+    if (userData && profileData) {
+      try {
+        localStorage.setItem('auth_session', JSON.stringify({
+          user: userData,
+          profile: profileData,
+          timestamp: Date.now()
+        }))
+      } catch (err) {
+        console.warn('Failed to persist session to localStorage:', err)
+      }
+    }
+  }
+
+  
+  const restoreSession = (): { user: UserSchema | null; profile: Profile | null } | null => {
+    try {
+      const stored = localStorage.getItem('auth_session')
+      if (stored) {
+        const { user: storedUser, profile: storedProfile } = JSON.parse(stored)
+        return { user: storedUser, profile: storedProfile }
+      }
+    } catch (err) {
+      console.warn('Failed to restore session from localStorage:', err)
+    }
+    return null
+  }
+
+  
+  const clearSession = () => {
+    try {
+      localStorage.removeItem('auth_session')
+    } catch (err) {
+      console.warn('Failed to clear session from localStorage:', err)
+    }
+  }
+
+  
+  const startTokenRefreshPolling = () => {
+    if (tokenRefreshIntervalRef.current) {
+      clearInterval(tokenRefreshIntervalRef.current)
+    }
+
+    tokenRefreshIntervalRef.current = setInterval(async () => {
+      try {
+        const { data } = await insforge.auth.getCurrentUser()
+        if (!data?.user) {
+          
+          console.warn('Token validation failed - user session expired')
+          setUser(null)
+          setProfile(null)
+          clearSession()
+        }
+      } catch (err) {
+        console.warn('Token refresh polling error:', err)
+      }
+    }, 15 * 60 * 1000)
+  }
+
+
+  const stopTokenRefreshPolling = () => {
+    if (tokenRefreshIntervalRef.current) {
+      clearInterval(tokenRefreshIntervalRef.current)
+      tokenRefreshIntervalRef.current = null
+    }
+  }
 
   const upsertProfile = async (userData: UserSchema): Promise<Profile> => {
     const discordProfile = userData.profile as any
@@ -81,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error
       }
 
-      // Row already existed (ignored duplicate): fetch current row
+
       const { data: existingProfile, error: fetchError } = await insforge.database
         .from('profiles')
         .select('*')
@@ -102,6 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshProfile = async () => {
     if (!user) {
       setProfile(null)
+      clearSession()
       return
     }
 
@@ -119,9 +189,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data) {
         setProfile(data as Profile)
+        persistSession(user, data as Profile)
       } else {
         const newProfile = await upsertProfile(user)
         setProfile(newProfile)
+        persistSession(user, newProfile)
       }
     } catch (err) {
       console.error('Failed to refresh profile:', err)
@@ -134,21 +206,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
-        // Check if we have OAuth parameters and clean URL
+
         const urlParams = new URLSearchParams(window.location.search)
         if (urlParams.has('insforge_code')) {
-          // Clean URL immediately to prevent re-processing
+
           window.history.replaceState({}, document.title, window.location.pathname)
         }
 
-        // Let SDK handle OAuth callback automatically
-        const { data } = await insforge.auth.getCurrentUser()
+
+        const restoredSession = restoreSession()
+        if (restoredSession?.user && restoredSession?.profile) {
+          setUser(restoredSession.user)
+          setProfile(restoredSession.profile)
+          setLoading(false)
+          startTokenRefreshPolling()
+          return
+        }
+
+
+        let { data } = await insforge.auth.getCurrentUser()
         const currentUser = data?.user ?? null
 
         if (currentUser) {
           setUser(currentUser)
 
-          // Get or create profile
+
           const { data: profileData, error } = await insforge.database
             .from('profiles')
             .select('*')
@@ -156,20 +238,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single()
 
           if (profileData) {
-            setProfile(profileData as Profile)
+            const profile = profileData as Profile
+            setProfile(profile)
+            persistSession(currentUser, profile)
           } else {
             const newProfile = await upsertProfile(currentUser)
             setProfile(newProfile)
+            persistSession(currentUser, newProfile)
           }
+
+          startTokenRefreshPolling()
+        } else {
+          clearSession()
         }
       } catch (err) {
         console.error('Auth init error:', err)
+        clearSession()
       } finally {
         setLoading(false)
       }
     }
 
     initAuth()
+
+    return () => {
+      stopTokenRefreshPolling()
+    }
   }, [])
 
   const signInWithDiscord = async () => {
@@ -185,11 +279,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      stopTokenRefreshPolling()
       await insforge.auth.signOut()
       setUser(null)
       setProfile(null)
+      clearSession()
     } catch (err) {
       console.error('Sign out error:', err)
+
+      setUser(null)
+      setProfile(null)
+      clearSession()
     }
   }
 

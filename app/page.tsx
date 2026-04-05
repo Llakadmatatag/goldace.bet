@@ -300,7 +300,7 @@ export default function Home() {
                       </h3>
 
                       <div className="mt-5 flex items-center justify-between text-sm font-semibold text-white">
-                        <span>Explore</span>
+                        <span>Explore section</span>
                         <span className="rounded-full border border-orange-400/25 bg-orange-500/10 px-3 py-1 text-orange-100 transition-all duration-300 group-hover:bg-orange-500/20">
                           →
                         </span>

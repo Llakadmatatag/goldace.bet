@@ -1,13 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@insforge/sdk";
+import { insforge } from "@/lib/insforge";
 import { Copy } from "lucide-react";
-
-const insforge = createClient({
-  baseUrl: process.env.NEXT_PUBLIC_INSFORGE_BASE_URL!,
-  anonKey: process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY!
-});
 
 interface LeaderboardPlayer {
   rank: number;
