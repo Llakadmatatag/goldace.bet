@@ -52,6 +52,9 @@ export default function CSGOWINLeaderboard() {
           return;
         }
         
+        console.log('Meta data response:', metaDataResponse);
+        console.log('Date end from response:', metaDataResponse?.date_end);
+        
         const { data: leaderboardResponse, error: leaderboardError } = await insforge.database
           .from('csgowin_lb')
           .select('name, wagered')
@@ -72,6 +75,8 @@ export default function CSGOWINLeaderboard() {
         };
         
         setMetaData(metaDataToSet);
+        console.log('Final metaData set:', metaDataToSet);
+        console.log('Final date_end:', metaDataToSet?.date_end);
         const processedLeaderboard = leaderboardResponse.map((player: any, index: number) => {
           const prizeText = metaDataToSet.prizes[index] || "0";
           
