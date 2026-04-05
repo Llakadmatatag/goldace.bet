@@ -9,6 +9,7 @@ interface LeaderboardPlayer {
   username: string;
   wager: number;
   prize: string | number;
+  avatar_selected?: string | null;
 }
 
 interface MetaData {
@@ -54,7 +55,7 @@ export default function CSGOWINLeaderboard() {
         
         const { data: leaderboardResponse, error: leaderboardError } = await insforge.database
           .from('csgowin_lb')
-          .select('name, wagered')
+          .select('name, wagered, avatar_selected')
           .order('wagered', { ascending: false });
 
         if (leaderboardError) {
@@ -79,7 +80,8 @@ export default function CSGOWINLeaderboard() {
             rank: index + 1,
             username: player.name,
             wager: parseFloat(player.wagered),
-            prize: prizeText
+            prize: prizeText,
+            avatar_selected: player.avatar_selected
           };
         });
 
@@ -231,7 +233,11 @@ export default function CSGOWINLeaderboard() {
                 </div>
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 bg-gray-700/50 rounded-md flex items-center justify-center border-2 border-gray-600/50 overflow-hidden">
-                    <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                    {leaderboardData[1]?.avatar_selected ? (
+                      <img src={leaderboardData[1].avatar_selected} alt={leaderboardData[1].username} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                    )}
                   </div>
                   <div>
                     <div className="text-xl font-bold text-white truncate max-w-[120px] sm:max-w-[150px]">
@@ -276,7 +282,11 @@ export default function CSGOWINLeaderboard() {
                   </div>
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-20 h-20 bg-gradient-to-br from-yellow-600/50 to-amber-600/50 rounded-md flex items-center justify-center border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/30 overflow-hidden">
-                      <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                      {leaderboardData[0]?.avatar_selected ? (
+                        <img src={leaderboardData[0].avatar_selected} alt={leaderboardData[0].username} className="w-full h-full object-cover" />
+                      ) : (
+                        <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                      )}
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-white truncate max-w-[140px] sm:max-w-[180px]">
@@ -320,7 +330,11 @@ export default function CSGOWINLeaderboard() {
                 </div>
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 bg-orange-700/50 rounded-md flex items-center justify-center border-2 border-orange-600/50 overflow-hidden">
-                    <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                    {leaderboardData[2]?.avatar_selected ? (
+                      <img src={leaderboardData[2].avatar_selected} alt={leaderboardData[2].username} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                    )}
                   </div>
                   <div>
                     <div className="text-xl font-bold text-white truncate max-w-[120px] sm:max-w-[150px]">
