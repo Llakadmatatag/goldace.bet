@@ -35,9 +35,7 @@ export default function CSGOROLLLeaderboard() {
     seconds: 0
   });
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -371,39 +369,32 @@ export default function CSGOROLLLeaderboard() {
                       </td>
                     </tr>
                   ) : leaderboardData.length > 3 ? (
-                    (() => {
-                      const ranksFrom4 = leaderboardData.slice(3);
-                      const startIndex = (currentPage - 1) * itemsPerPage;
-                      const endIndex = startIndex + itemsPerPage;
-                      const currentData = ranksFrom4.slice(startIndex, endIndex);
-                      
-                      return currentData.map((player) => (
-                        <tr key={player.rank} className="border-b border-orange-800/20 hover:bg-orange-900/20 transition-colors">
-                          <td className="px-4 py-4">
-                            <span className="text-white font-bold text-lg">#{player.rank}</span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-white font-medium">{maskUsername(player.username)}</span>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <img src="/images/partners/csgoroll_coin.webp" alt="Coin" className="w-4 h-4" />
-                              <span className="text-orange-300 font-semibold">
-                                {player.wager.toLocaleString()}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <img src="/images/partners/csgoroll_coin.webp" alt="Coin" className="w-4 h-4" />
-                              <span className="text-orange-400 font-semibold">
-                                {player.prize || '0'}
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                      ));
-                    })()
+                    leaderboardData.slice(3, 10).map((player) => (
+                      <tr key={player.rank} className="border-b border-orange-800/20 hover:bg-orange-900/20 transition-colors">
+                        <td className="px-4 py-4">
+                          <span className="text-white font-bold text-lg">#{player.rank}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-white font-medium">{maskUsername(player.username)}</span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <img src="/images/partners/csgoroll_coin.webp" alt="Coin" className="w-4 h-4" />
+                            <span className="text-orange-300 font-semibold">
+                              {player.wager.toLocaleString()}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <img src="/images/partners/csgoroll_coin.webp" alt="Coin" className="w-4 h-4" />
+                            <span className="text-orange-400 font-semibold">
+                              {player.prize || '0'}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     <tr>
                       <td colSpan={4} className="px-6 py-12 text-center">
@@ -423,87 +414,6 @@ export default function CSGOROLLLeaderboard() {
           </div>
         </div>
       </section>
-
-      {/* Pagination Controls */}
-      {leaderboardData.length > 3 && (() => {
-        const ranksFrom4 = leaderboardData.slice(3);
-        const totalPages = Math.ceil(ranksFrom4.length / itemsPerPage);
-        const isLastPage = currentPage === totalPages;
-        const isFirstPage = currentPage === 1;
-        
-        if (totalPages <= 1) return null;
-
-        return (
-          <section className="py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-orange-200">
-                  Showing {((currentPage - 1) * itemsPerPage) + 4} to {Math.min(currentPage * itemsPerPage + 3, leaderboardData.length)} of {leaderboardData.length} players
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={isFirstPage}
-                    className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 ${
-                      isFirstPage
-                        ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
-                        : 'bg-orange-900/30 text-orange-200 hover:bg-orange-800/50 border border-orange-700/30'
-                    }`}
-                  >
-                    ← Previous
-                  </button>
-                  
-                  <div className="flex items-center gap-1">
-                    {(() => {
-                      const pages = [];
-                      
-                      for (let i = 1; i <= totalPages; i++) {
-                        if (
-                          i === 1 || 
-                          i === totalPages || 
-                          (i >= currentPage - 1 && i <= currentPage + 1)
-                        ) {
-                          pages.push(
-                            <button
-                              key={i}
-                              onClick={() => setCurrentPage(i)}
-                              className={`w-10 h-10 rounded-lg font-medium transition-all duration-300 ${
-                                currentPage === i
-                                  ? 'bg-orange-500 text-white'
-                                  : 'bg-orange-900/30 text-orange-200 hover:bg-orange-800/50 border border-orange-700/30'
-                              }`}
-                            >
-                              {i}
-                            </button>
-                          );
-                        } else if (i === currentPage - 2 || i === currentPage + 2) {
-                          pages.push(
-                            <span key={i} className="text-orange-400">...</span>
-                          );
-                        }
-                      }
-                      
-                      return pages;
-                    })()}
-                  </div>
-                  
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={isLastPage}
-                    className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 ${
-                      isLastPage
-                        ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
-                        : 'bg-orange-900/30 text-orange-200 hover:bg-orange-800/50 border border-orange-700/30'
-                    }`}
-                  >
-                    Next →
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-      })()}
 
       {/* Previous Winners Section */}
       <section className="py-12">
