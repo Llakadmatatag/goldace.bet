@@ -157,7 +157,7 @@ export default function CSGOWINLeaderboard() {
                   Monthly <span className="text-blue-400">Leaderboard</span>
                 </h1>
                 <p className="text-xl text-blue-200 flex items-center gap-2">
-                  Prize Pool: <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-5 h-5" /> {metaData?.prizes?.reduce((sum: number, prize: number) => sum + prize, 0) || 'TBA'}
+                  Prize Pool: <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-5 h-5" /> {metaData?.prizes?.reduce((sum: number, prize: string) => sum + Number(prize), 0) || 'TBA'}
                 </p>
               </div>
 
