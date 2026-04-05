@@ -49,11 +49,8 @@ export default function CSGOWINLeaderboard() {
         
         if (metaError) {
           console.error('Error fetching metadata:', metaError);
-          console.error('Meta error details:', JSON.stringify(metaError, null, 2));
           return;
         }
-        
-        console.log('Meta data response:', metaDataResponse);
         
         const { data: leaderboardResponse, error: leaderboardError } = await insforge.database
           .from('csgowin_lb')
