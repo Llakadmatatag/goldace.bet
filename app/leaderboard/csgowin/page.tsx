@@ -49,12 +49,8 @@ export default function CSGOWINLeaderboard() {
         
         if (metaError) {
           console.error('Error fetching metadata:', metaError);
-          console.error('Full error details:', JSON.stringify(metaError, null, 2));
           return;
         }
-        
-        console.log('Meta data response from InsForge:', metaDataResponse);
-        console.log('Date end from InsForge:', metaDataResponse?.date_end);
         
         const { data: leaderboardResponse, error: leaderboardError } = await insforge.database
           .from('csgowin_lb')
@@ -76,8 +72,6 @@ export default function CSGOWINLeaderboard() {
         };
         
         setMetaData(metaDataToSet);
-        console.log('Final metaData object being set:', metaDataToSet);
-        console.log('Final date_end being set:', metaDataToSet?.date_end);
         const processedLeaderboard = leaderboardResponse.map((player: any, index: number) => {
           const prizeText = metaDataToSet.prizes[index] || "0";
           
@@ -230,7 +224,7 @@ export default function CSGOWINLeaderboard() {
                     <div className="flex items-center justify-end gap-1">
                       <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                       <div className="text-xl font-bold text-gray-200">
-                        {leaderboardData[1]?.prize || '0'}
+                        {metaData?.prizes?.[1] || '0'}
                       </div>
                     </div>
                   </div>
@@ -241,7 +235,7 @@ export default function CSGOWINLeaderboard() {
                   </div>
                   <div>
                     <div className="text-xl font-bold text-white truncate max-w-[120px] sm:max-w-[150px]">
-                      {maskUsername(leaderboardData[1]?.username)}
+                      {maskUsername(leaderboardData[1]?.username) || '—'}
                     </div>
                   </div>
                 </div>
@@ -251,7 +245,7 @@ export default function CSGOWINLeaderboard() {
                     <div className="flex items-center gap-1">
                       <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                       <span className="text-lg font-bold text-gray-200">
-                        {leaderboardData[1]?.wager?.toLocaleString()}
+                        {leaderboardData[1]?.wager?.toLocaleString() || '—'}
                       </span>
                     </div>
                   </div>
@@ -275,7 +269,7 @@ export default function CSGOWINLeaderboard() {
                       <div className="flex items-center justify-end gap-1">
                         <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                         <div className="text-2xl font-bold text-yellow-200">
-                          {leaderboardData[0]?.prize || '0'}
+                          {metaData?.prizes?.[0] || '0'}
                         </div>
                       </div>
                     </div>
@@ -286,7 +280,7 @@ export default function CSGOWINLeaderboard() {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-white truncate max-w-[140px] sm:max-w-[180px]">
-                        {maskUsername(leaderboardData[0]?.username)}
+                        {maskUsername(leaderboardData[0]?.username) || '—'}
                       </div>
                     </div>
                   </div>
@@ -296,7 +290,7 @@ export default function CSGOWINLeaderboard() {
                       <div className="flex items-center gap-1">
                         <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                         <span className="text-xl font-bold text-yellow-200">
-                          {leaderboardData[0]?.wager?.toLocaleString()}
+                          {leaderboardData[0]?.wager?.toLocaleString() || '—'}
                         </span>
                       </div>
                     </div>
@@ -319,7 +313,7 @@ export default function CSGOWINLeaderboard() {
                     <div className="flex items-center justify-end gap-1">
                       <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                       <div className="text-xl font-bold text-orange-200">
-                        {leaderboardData[2]?.prize || '0'}
+                        {metaData?.prizes?.[2] || '0'}
                       </div>
                     </div>
                   </div>
@@ -330,7 +324,7 @@ export default function CSGOWINLeaderboard() {
                   </div>
                   <div>
                     <div className="text-xl font-bold text-white truncate max-w-[120px] sm:max-w-[150px]">
-                      {maskUsername(leaderboardData[2]?.username)}
+                      {maskUsername(leaderboardData[2]?.username) || '—'}
                     </div>
                   </div>
                 </div>
@@ -340,7 +334,7 @@ export default function CSGOWINLeaderboard() {
                     <div className="flex items-center gap-1">
                       <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                       <span className="text-lg font-bold text-orange-200">
-                        {leaderboardData[2]?.wager?.toLocaleString()}
+                        {leaderboardData[2]?.wager?.toLocaleString() || '—'}
                       </span>
                     </div>
                   </div>
@@ -377,45 +371,41 @@ export default function CSGOWINLeaderboard() {
                         <p className="text-blue-200 mt-4">Loading leaderboard data...</p>
                       </td>
                     </tr>
-                  ) : leaderboardData.length > 3 ? (
-                    leaderboardData.slice(3, 10).map((player) => (
-                      <tr key={player.rank} className="border-b border-blue-800/20 hover:bg-blue-900/20 transition-colors">
-                        <td className="px-4 py-4">
-                          <span className="text-white font-bold text-lg">#{player.rank}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-white font-medium">{maskUsername(player.username)}</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
-                            <span className="text-blue-300 font-semibold">
-                              {player.wager.toLocaleString()}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
-                            <span className="text-blue-400 font-semibold">
-                              {player.prize || '0'}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
                   ) : (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center">
-                        <div className="w-16 h-16 bg-blue-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                          <span className="text-2xl">📊</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-2">No Data Available</h3>
-                        <p className="text-blue-200">
-                          Leaderboard data will appear here once players start competing.
-                        </p>
-                      </td>
-                    </tr>
+                    // Always show ranks 1-5 with prize amounts
+                    [1, 2, 3, 4, 5].map((rank) => {
+                      const player = leaderboardData.find((p: LeaderboardPlayer) => p.rank === rank);
+                      const prize = metaData?.prizes?.[rank - 1] || '0';
+                      
+                      return (
+                        <tr key={rank} className="border-b border-blue-800/20 hover:bg-blue-900/20 transition-colors">
+                          <td className="px-4 py-4">
+                            <span className="text-white font-bold text-lg">#{rank}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-white font-medium">
+                              {player ? maskUsername(player.username) : '—'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
+                              <span className="text-blue-300 font-semibold">
+                                {player ? player.wager.toLocaleString() : '—'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
+                              <span className="text-blue-400 font-semibold">
+                                {prize}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
