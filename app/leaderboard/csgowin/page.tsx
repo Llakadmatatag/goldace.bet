@@ -169,7 +169,11 @@ export default function CSGOWINLeaderboard() {
               {/* RIGHT SIDE */}
               <div className="flex flex-col items-center lg:items-end text-center lg:text-right">
                 <h2 className="text-2xl font-audiowide text-white mb-4">Time Remaining</h2>
-                {metaData?.date_end ? (
+                {(() => {
+                  console.log('Display logic check - metaData:', metaData);
+                  console.log('Display logic check - date_end:', metaData?.date_end);
+                  console.log('Display logic check - date_end type:', typeof metaData?.date_end);
+                  return metaData?.date_end ? (
                   <div className="flex gap-2 sm:gap-4">
                     <div className="text-center">
                       <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
@@ -196,11 +200,11 @@ export default function CSGOWINLeaderboard() {
                       <div className="text-xs text-blue-200 mt-1">Seconds</div>
                     </div>
                   </div>
-                ) : (
+                  ) : (
                   <div className="text-xl text-blue-200">
                     Competition starting soon
                   </div>
-                )}
+                  )})()}
               </div>
             </div>
           </div>
