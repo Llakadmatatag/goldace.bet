@@ -144,7 +144,7 @@ export default function CSGOWINLeaderboard() {
             {/* Background Image */}
             <div className="absolute inset-0 opacity-20">
               <img 
-                src="/images/backgrounds/csgowin-banner-bg.webp" 
+                src="/images/backgrounds/csgowin-banner-bg.png" 
                 alt="CSGOWIN Banner Background" 
                 className="w-full h-full object-cover"
               />
