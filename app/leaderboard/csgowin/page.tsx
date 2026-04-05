@@ -61,7 +61,7 @@ export default function CSGOWINLeaderboard() {
           return;
         }
         
-        const prizeDistribution = metaDataResponse.prizes;
+        const prizeDistribution = JSON.parse(metaDataResponse.prizes);
         const processedLeaderboard = leaderboardResponse.map((player: any, index: number) => {
           const prizeText = prizeDistribution[index] || "0";
           
@@ -75,7 +75,13 @@ export default function CSGOWINLeaderboard() {
 
         const processedPreviousWinners: LeaderboardPlayer[] = []; // Leave empty for now
         
-        setMetaData(metaDataResponse);
+        setMetaData({
+
+          ...metaDataResponse,
+
+          prizes: JSON.parse(metaDataResponse.prizes)
+
+        });
         setLeaderboardData(processedLeaderboard);
         setPreviousWinners(processedPreviousWinners);
       } catch (error) {
