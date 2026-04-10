@@ -168,7 +168,8 @@ const LeaderboardAccordion: React.FC<LeaderboardAccordionProps> = ({ type, meta,
       onMetaUpdate();
     } catch (error) {
       console.error('Error updating leaderboard meta:', error);
-      setUpdateError(`Failed to update leaderboard: ${error.message || 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setUpdateError(`Failed to update leaderboard: ${errorMessage}`);
     } finally {
       setIsUpdating(false);
     }
