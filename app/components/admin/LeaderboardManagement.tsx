@@ -148,7 +148,9 @@ const LeaderboardAccordion: React.FC<LeaderboardAccordionProps> = ({ type, meta,
     try {
       const tableName = type === 'csgoroll' ? 'csgoroll_lb_meta' : 'monkeytilt_lb_meta';
       
-      const { error } = await insforge.database
+      console.log('Attempting to update:', { tableName, metaId: meta.id, editForm });
+
+      const { error, data } = await insforge.database
         .from(tableName)
         .update({
           start_date: editForm.start_date,
@@ -158,13 +160,15 @@ const LeaderboardAccordion: React.FC<LeaderboardAccordionProps> = ({ type, meta,
         })
         .eq('id', meta.id);
 
+      console.log('Update result:', { error, data });
+
       if (error) throw error;
 
       setIsEditing(false);
       onMetaUpdate();
     } catch (error) {
       console.error('Error updating leaderboard meta:', error);
-      setUpdateError('Failed to update leaderboard. Please try again.');
+      setUpdateError(`Failed to update leaderboard: ${error.message || 'Unknown error'}`);
     } finally {
       setIsUpdating(false);
     }
