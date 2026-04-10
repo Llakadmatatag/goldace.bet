@@ -528,25 +528,16 @@ const LeaderboardManagement: React.FC = () => {
           .limit(50)
       ]);
 
-      console.log('CSGOROLL Meta Result:', csgorollMetaResult);
-      console.log('CSGOROLL Active Result:', csgorollActiveResult);
-      console.log('MonkeyTilt Meta Result:', monkeytiltMetaResult);
-      console.log('MonkeyTilt Active Result:', monkeytiltActiveResult);
-
       if (csgorollMetaResult.error) {
-        console.error('CSGOROLL Meta Error:', csgorollMetaResult.error);
         throw csgorollMetaResult.error;
       }
       if (csgorollActiveResult.error) {
-        console.error('CSGOROLL Active Error:', csgorollActiveResult.error);
         throw csgorollActiveResult.error;
       }
       if (monkeytiltMetaResult.error) {
-        console.error('MonkeyTilt Meta Error:', monkeytiltMetaResult.error);
         throw monkeytiltMetaResult.error;
       }
       if (monkeytiltActiveResult.error) {
-        console.error('MonkeyTilt Active Error:', monkeytiltActiveResult.error);
         throw monkeytiltActiveResult.error;
       }
 
