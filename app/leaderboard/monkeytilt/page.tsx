@@ -61,8 +61,8 @@ export default function MonkeyTiltLeaderboard() {
         
         const { data: previousWinnersResponse, error: previousWinnersError } = await insforge.database
           .from('monkeytilt_previous_lb')
-          .select('username, wager, prize')
-          .order('wager', { ascending: false })
+          .select('Username, Wager, Prize')
+          .order('Wager', { ascending: false })
           .limit(3);
         
         if (leaderboardError) {
@@ -84,9 +84,9 @@ export default function MonkeyTiltLeaderboard() {
         
         const processedPreviousWinners = (previousWinnersResponse || []).map((winner: any, index: number) => ({
           rank: index + 1,
-          username: winner.username,
-          wager: Number(winner.wager) || 0,
-          prize: Number(winner.prize) || 0
+          username: winner.Username || winner.username,
+          wager: Number(winner.Wager ?? winner.wager) || 0,
+          prize: Number(winner.Prize ?? winner.prize) || 0
         }));
         
         setMetaData(metaDataResponse);
