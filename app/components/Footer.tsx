@@ -185,6 +185,14 @@ const Footer: React.FC = () => {
                   MONKEYTILT
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/leaderboard/csgowin"
+                  className="text-gray-400 hover:text-orange-400 transition-colors duration-200 text-sm"
+                >
+                  CSGOWIN
+                </Link>
+              </li>
             </ul>
           </div>
 

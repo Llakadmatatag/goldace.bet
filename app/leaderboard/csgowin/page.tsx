@@ -9,6 +9,7 @@ interface LeaderboardPlayer {
   username: string;
   wager: number;
   prize: string | number;
+  avatar_selected?: string | null;
 }
 
 interface MetaData {
@@ -44,7 +45,8 @@ export default function CSGOWINLeaderboard() {
         const { data: metaDataResponse, error: metaError } = await insforge.database
           .from('csgowin_lb_meta')
           .select('*')
-          .single();
+          .eq('active', true)
+          .maybeSingle();
         
         if (metaError) {
           console.error('Error fetching metadata:', metaError);
@@ -53,7 +55,7 @@ export default function CSGOWINLeaderboard() {
         
         const { data: leaderboardResponse, error: leaderboardError } = await insforge.database
           .from('csgowin_lb')
-          .select('name, wagered')
+          .select('name, wagered, avatar_selected')
           .order('wagered', { ascending: false });
 
         if (leaderboardError) {
@@ -64,7 +66,7 @@ export default function CSGOWINLeaderboard() {
         const defaultPrizes = [250, 125, 75, 25, 25];
         const metaDataToSet = metaDataResponse ? {
           ...metaDataResponse,
-          prizes: JSON.parse(metaDataResponse.prizes)
+          prizes: metaDataResponse.prizes
         } : {
           prizes: defaultPrizes,
           date_end: null
@@ -78,11 +80,12 @@ export default function CSGOWINLeaderboard() {
             rank: index + 1,
             username: player.name,
             wager: parseFloat(player.wagered),
-            prize: prizeText
+            prize: prizeText,
+            avatar_selected: player.avatar_selected
           };
         });
 
-        const processedPreviousWinners: LeaderboardPlayer[] = []; // Leave empty for now
+        const processedPreviousWinners: LeaderboardPlayer[] = [];
         
         setMetaData(metaDataToSet);
         setLeaderboardData(processedLeaderboard);
@@ -141,7 +144,7 @@ export default function CSGOWINLeaderboard() {
             {/* Background Image */}
             <div className="absolute inset-0 opacity-20">
               <img 
-                src="/images/backgrounds/csgowin-banner-bg.webp" 
+                src="/images/backgrounds/csgowin-banner-bg.png" 
                 alt="CSGOWIN Banner Background" 
                 className="w-full h-full object-cover"
               />
@@ -156,14 +159,18 @@ export default function CSGOWINLeaderboard() {
                   Monthly <span className="text-blue-400">Leaderboard</span>
                 </h1>
                 <p className="text-xl text-blue-200 flex items-center gap-2">
-                  Prize Pool: <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-5 h-5" /> {metaData?.prizes?.[0] || 'TBA'}
+                  Prize Pool: <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-5 h-5" /> {metaData?.prizes?.reduce((sum: number, prize: string) => sum + Number(prize), 0) || 'TBA'}
                 </p>
               </div>
 
               {/* RIGHT SIDE */}
               <div className="flex flex-col items-center lg:items-end text-center lg:text-right">
                 <h2 className="text-2xl font-audiowide text-white mb-4">Time Remaining</h2>
-                {metaData?.date_end ? (
+                {loading ? (
+                  <div className="text-xl text-blue-200">
+                    Loading competition data...
+                  </div>
+                ) : metaData?.date_end ? (
                   <div className="flex gap-2 sm:gap-4">
                     <div className="text-center">
                       <div className="bg-blue-800/30 border border-blue-700/50 rounded-lg px-3 py-2 min-w-[60px]">
@@ -219,18 +226,22 @@ export default function CSGOWINLeaderboard() {
                     <div className="flex items-center justify-end gap-1">
                       <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                       <div className="text-xl font-bold text-gray-200">
-                        {leaderboardData[1]?.prize || '0'}
+                        {metaData?.prizes?.[1] || '0'}
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 bg-gray-700/50 rounded-md flex items-center justify-center border-2 border-gray-600/50 overflow-hidden">
-                    <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                    {leaderboardData[1]?.avatar_selected ? (
+                      <img src={leaderboardData[1].avatar_selected} alt={leaderboardData[1].username} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                    )}
                   </div>
                   <div>
                     <div className="text-xl font-bold text-white truncate max-w-[120px] sm:max-w-[150px]">
-                      {maskUsername(leaderboardData[1]?.username)}
+                      {maskUsername(leaderboardData[1]?.username) || '—'}
                     </div>
                   </div>
                 </div>
@@ -240,7 +251,7 @@ export default function CSGOWINLeaderboard() {
                     <div className="flex items-center gap-1">
                       <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                       <span className="text-lg font-bold text-gray-200">
-                        {leaderboardData[1]?.wager?.toLocaleString()}
+                        {leaderboardData[1]?.wager?.toLocaleString() || '—'}
                       </span>
                     </div>
                   </div>
@@ -264,18 +275,22 @@ export default function CSGOWINLeaderboard() {
                       <div className="flex items-center justify-end gap-1">
                         <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                         <div className="text-2xl font-bold text-yellow-200">
-                          {leaderboardData[0]?.prize || '0'}
+                          {metaData?.prizes?.[0] || '0'}
                         </div>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-20 h-20 bg-gradient-to-br from-yellow-600/50 to-amber-600/50 rounded-md flex items-center justify-center border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/30 overflow-hidden">
-                      <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                      {leaderboardData[0]?.avatar_selected ? (
+                        <img src={leaderboardData[0].avatar_selected} alt={leaderboardData[0].username} className="w-full h-full object-cover" />
+                      ) : (
+                        <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                      )}
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-white truncate max-w-[140px] sm:max-w-[180px]">
-                        {maskUsername(leaderboardData[0]?.username)}
+                        {maskUsername(leaderboardData[0]?.username) || '—'}
                       </div>
                     </div>
                   </div>
@@ -285,7 +300,7 @@ export default function CSGOWINLeaderboard() {
                       <div className="flex items-center gap-1">
                         <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                         <span className="text-xl font-bold text-yellow-200">
-                          {leaderboardData[0]?.wager?.toLocaleString()}
+                          {leaderboardData[0]?.wager?.toLocaleString() || '—'}
                         </span>
                       </div>
                     </div>
@@ -308,18 +323,22 @@ export default function CSGOWINLeaderboard() {
                     <div className="flex items-center justify-end gap-1">
                       <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                       <div className="text-xl font-bold text-orange-200">
-                        {leaderboardData[2]?.prize || '0'}
+                        {metaData?.prizes?.[2] || '0'}
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 bg-orange-700/50 rounded-md flex items-center justify-center border-2 border-orange-600/50 overflow-hidden">
-                    <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                    {leaderboardData[2]?.avatar_selected ? (
+                      <img src={leaderboardData[2].avatar_selected} alt={leaderboardData[2].username} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src="/images/partners/csgowin-icon.webp" alt="CSGOWIN" className="w-full h-full object-cover" />
+                    )}
                   </div>
                   <div>
                     <div className="text-xl font-bold text-white truncate max-w-[120px] sm:max-w-[150px]">
-                      {maskUsername(leaderboardData[2]?.username)}
+                      {maskUsername(leaderboardData[2]?.username) || '—'}
                     </div>
                   </div>
                 </div>
@@ -329,7 +348,7 @@ export default function CSGOWINLeaderboard() {
                     <div className="flex items-center gap-1">
                       <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
                       <span className="text-lg font-bold text-orange-200">
-                        {leaderboardData[2]?.wager?.toLocaleString()}
+                        {leaderboardData[2]?.wager?.toLocaleString() || '—'}
                       </span>
                     </div>
                   </div>
@@ -366,45 +385,40 @@ export default function CSGOWINLeaderboard() {
                         <p className="text-blue-200 mt-4">Loading leaderboard data...</p>
                       </td>
                     </tr>
-                  ) : leaderboardData.length > 3 ? (
-                    leaderboardData.slice(3, 10).map((player) => (
-                      <tr key={player.rank} className="border-b border-blue-800/20 hover:bg-blue-900/20 transition-colors">
-                        <td className="px-4 py-4">
-                          <span className="text-white font-bold text-lg">#{player.rank}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-white font-medium">{maskUsername(player.username)}</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
-                            <span className="text-blue-300 font-semibold">
-                              {player.wager.toLocaleString()}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
-                            <span className="text-blue-400 font-semibold">
-                              {player.prize || '0'}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
                   ) : (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center">
-                        <div className="w-16 h-16 bg-blue-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                          <span className="text-2xl">📊</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-2">No Data Available</h3>
-                        <p className="text-blue-200">
-                          Leaderboard data will appear here once players start competing.
-                        </p>
-                      </td>
-                    </tr>
+                    [4, 5].map((rank) => {
+                      const player = leaderboardData.find((p: LeaderboardPlayer) => p.rank === rank);
+                      const prize = metaData?.prizes?.[rank - 1] || '0';
+                      
+                      return (
+                        <tr key={rank} className="border-b border-blue-800/20 hover:bg-blue-900/20 transition-colors">
+                          <td className="px-4 py-4">
+                            <span className="text-white font-bold text-lg">#{rank}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-white font-medium">
+                              {player ? maskUsername(player.username) : '—'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
+                              <span className="text-blue-300 font-semibold">
+                                {player ? player.wager.toLocaleString() : '—'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <img src="/images/partners/csgowin-coin.webp" alt="Coin" className="w-4 h-4" />
+                              <span className="text-blue-400 font-semibold">
+                                {prize}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
