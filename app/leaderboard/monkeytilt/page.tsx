@@ -26,6 +26,7 @@ interface TimeRemaining {
 
 export default function MonkeyTiltLeaderboard() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardPlayer[]>([]);
+  const [previousWinners, setPreviousWinners] = useState<LeaderboardPlayer[]>([]);
   const [metaData, setMetaData] = useState<MetaData | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
@@ -58,9 +59,19 @@ export default function MonkeyTiltLeaderboard() {
           .select('player_id, total_bet_amount')
           .order('total_bet_amount', { ascending: false });
         
+        const { data: previousWinnersResponse, error: previousWinnersError } = await insforge.database
+          .from('monkeytilt_previous_lb')
+          .select('username, wager, prize')
+          .order('wager', { ascending: false })
+          .limit(3);
+        
         if (leaderboardError) {
           console.error('Error fetching leaderboard:', leaderboardError);
           return;
+        }
+        
+        if (previousWinnersError) {
+          console.error('Error fetching previous winners:', previousWinnersError);
         }
         
         const prizeDistribution = metaDataResponse.prize_distribution as number[];
@@ -71,8 +82,16 @@ export default function MonkeyTiltLeaderboard() {
           prize: prizeDistribution[index] || 0
         }));
         
+        const processedPreviousWinners = (previousWinnersResponse || []).map((winner: any, index: number) => ({
+          rank: index + 1,
+          username: winner.username,
+          wager: Number(winner.wager) || 0,
+          prize: Number(winner.prize) || 0
+        }));
+        
         setMetaData(metaDataResponse);
         setLeaderboardData(processedLeaderboard);
+        setPreviousWinners(processedPreviousWinners);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -480,93 +499,87 @@ export default function MonkeyTiltLeaderboard() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Previous winners will be shown here when historical data is available */}
-            <div className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-black font-bold">
-                    1
+            {previousWinners.length > 0 ? (
+              previousWinners.map((winner) => (
+                <div
+                  key={winner.rank}
+                  className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center text-black font-bold">
+                        {winner.rank}
+                      </div>
+                      <span className="text-orange-400 font-semibold">
+                        {winner.rank === 1 ? 'Previous Champion' : winner.rank === 2 ? 'Previous Runner-up' : 'Previous Winner'}
+                      </span>
+                    </div>
+                    <div className="text-yellow-400 font-bold">
+                      ${winner.prize?.toLocaleString()}
+                    </div>
                   </div>
-                  <span className="text-orange-400 font-semibold">Previous Champion</span>
-                </div>
-                <div className="text-yellow-400 font-bold">
-                  TBA
-                </div>
-              </div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gray-700/50 rounded-full flex items-center justify-center border-2 border-gray-600/50">
-                  <img src="/images/partners/monkeytilt-icon.png" alt="MonkeyTilt" className="w-8 h-8 object-cover" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold">Waiting for Winner</div>
-                  <div className="text-gray-400 text-sm">Previous month champion</div>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-orange-800/30">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-400">Total Wager</span>
-                  <span className="text-orange-300 font-semibold">TBA</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white font-bold">
-                    2
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gray-700/50 rounded-full flex items-center justify-center border-2 border-gray-600/50">
+                      <img src="/images/partners/monkeytilt-icon.png" alt="MonkeyTilt" className="w-8 h-8 object-cover" />
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold break-words max-w-[180px]">
+                        {maskUsername(winner.username)}
+                      </div>
+                      <div className="text-gray-400 text-sm">Previous leaderboard runner</div>
+                    </div>
                   </div>
-                  <span className="text-orange-400 font-semibold">Previous Runner-up</span>
-                </div>
-                <div className="text-yellow-400 font-bold">
-                  TBA
-                </div>
-              </div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gray-700/50 rounded-full flex items-center justify-center border-2 border-gray-600/50">
-                  <img src="/images/partners/monkeytilt-icon.png" alt="MonkeyTilt" className="w-8 h-8 object-cover" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold">Waiting for Winner</div>
-                  <div className="text-gray-400 text-sm">Previous month runner-up</div>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-orange-800/30">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-400">Total Wager</span>
-                  <span className="text-orange-300 font-semibold">TBA</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-orange-600 to-orange-700 rounded-full flex items-center justify-center text-white font-bold">
-                    3
+                  <div className="pt-4 border-t border-orange-800/30 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-400">Total Wager</span>
+                      <span className="text-orange-300 font-semibold">
+                        ${winner.wager.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-400">Prize</span>
+                      <span className="text-yellow-400 font-semibold">
+                        ${winner.prize?.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-orange-400 font-semibold">Previous Third Place</span>
                 </div>
-                <div className="text-yellow-400 font-bold">
-                  TBA
+              ))
+            ) : (
+              [1, 2, 3].map((index) => (
+                <div
+                  key={index}
+                  className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 backdrop-blur-md border border-orange-800/30 rounded-xl p-6 hover:bg-orange-900/30 transition-all duration-300"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white font-bold">
+                        {index}
+                      </div>
+                      <span className="text-orange-400 font-semibold">
+                        Previous Winner
+                      </span>
+                    </div>
+                    <div className="text-yellow-400 font-bold">TBA</div>
+                  </div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-gray-700/50 rounded-full flex items-center justify-center border-2 border-gray-600/50">
+                      <img src="/images/partners/monkeytilt-icon.png" alt="MonkeyTilt" className="w-8 h-8 object-cover" />
+                    </div>
+                    <div>
+                      <div className="text-white font-semibold">Waiting for Winner</div>
+                      <div className="text-gray-400 text-sm">Previous month leaderboard</div>
+                    </div>
+                  </div>
+                  <div className="pt-4 border-t border-orange-800/30">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-400">Total Wager</span>
+                      <span className="text-orange-300 font-semibold">TBA</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gray-700/50 rounded-full flex items-center justify-center border-2 border-gray-600/50">
-                  <img src="/images/partners/monkeytilt-icon.png" alt="MonkeyTilt" className="w-8 h-8 object-cover" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold">Waiting for Winner</div>
-                  <div className="text-gray-400 text-sm">Previous month third place</div>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-orange-800/30">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-400">Total Wager</span>
-                  <span className="text-orange-300 font-semibold">TBA</span>
-                </div>
-              </div>
-            </div>
+              ))
+            )}
           </div>
           
           <div className="text-center mt-8">
