@@ -164,6 +164,15 @@ const LeaderboardAccordion: React.FC<LeaderboardAccordionProps> = ({ type, meta,
 
       if (error) throw error;
 
+      // Verify the update by fetching the updated record
+      const { data: updatedData, error: fetchError } = await insforge.database
+        .from(tableName)
+        .select('*')
+        .eq('id', meta.id)
+        .single();
+
+      console.log('Verification fetch after update:', { updatedData, fetchError });
+
       setIsEditing(false);
       onMetaUpdate();
     } catch (error) {
